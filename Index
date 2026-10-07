@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="author" content="Faiz Zulkifli">
+<title>Drug–Receptor Binding Challenge | UiTM PH110</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0d1828;--panel:#15263b;--line:#2b4363;--tx:#e8eef6;--mu:#8fa5c0;--cy:#4fd1c5;--am:#f6c453;--rd:#ff6b6b}
+*{box-sizing:border-box}
+body{margin:0;background:radial-gradient(circle at 50% 40%,#16304a,var(--bg) 70%);color:var(--tx);font-family:'Space Grotesk',system-ui,sans-serif;min-height:100vh;display:flex;flex-direction:column}
+header{text-align:center;padding:18px 12px 4px}
+h1{margin:0;font-size:clamp(1.2rem,3vw,1.9rem);letter-spacing:.04em}
+.sub{color:var(--mu);font-size:.85rem}
+.bar{display:flex;justify-content:space-between;align-items:center;max-width:1100px;width:100%;margin:8px auto;padding:0 16px;font-weight:500}
+.prog{height:4px;background:var(--line);max-width:1068px;width:calc(100% - 32px);margin:0 auto;border-radius:2px}
+.prog i{display:block;height:100%;background:var(--cy);border-radius:2px;transition:width .4s}
+main{flex:1;max-width:1100px;width:100%;margin:0 auto;padding:12px 16px}
+.q{text-align:center;font-size:1.1rem;margin:10px 0 14px}
+.arena{display:grid;grid-template-columns:1fr 190px 1fr;gap:14px;align-items:center}
+.col{display:grid;gap:14px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:10px 12px;transition:.25s;position:relative}
+.card.over{border-color:var(--cy);box-shadow:0 0 0 2px var(--cy)}
+.card.out{opacity:.35}
+.card h3{margin:0 0 4px;font-size:.95rem;color:var(--cy)}
+.card dl{margin:0;font-size:.82rem}.card dt{color:var(--mu);font-size:.72rem;margin-top:4px}.card dd{margin:0}
+.rec{width:100%;height:84px;display:block}
+.bind{width:100%;margin-top:6px;background:transparent;color:var(--tx);border:1px solid var(--line);border-radius:8px;padding:5px;font:inherit;font-size:.78rem;cursor:pointer}
+.bind:hover,.bind:focus-visible{border-color:var(--cy);outline:none}
+.lig{display:flex;flex-direction:column;align-items:center;text-align:center;gap:6px}
+.drug{touch-action:none;cursor:grab;user-select:none;background:#1c3a57;border:2px solid var(--am);border-radius:50%;width:132px;height:132px;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:5;position:relative;transition:transform .35s}
+.drug.drag{transition:none;cursor:grabbing;box-shadow:0 0 24px #f6c45366}
+.drug b{font-size:.95rem;padding:0 6px}.drug small{color:var(--mu);font-size:.65rem}
+.lbl{color:var(--mu);font-size:.75rem}.use{font-size:.8rem;color:var(--mu)}
+.btns{display:flex;gap:8px;justify-content:center;margin:14px 0;flex-wrap:wrap}
+button.b{background:var(--panel);color:var(--tx);border:1px solid var(--line);border-radius:8px;padding:8px 14px;font:inherit;cursor:pointer}
+button.b:hover:not(:disabled),button.b:focus-visible{border-color:var(--am);outline:none}
+button.b:disabled{opacity:.4;cursor:default}button.p{background:var(--cy);color:#06241f;border-color:var(--cy);font-weight:700}
+.hints{max-width:700px;margin:0 auto;font-size:.9rem}.hints p{margin:6px 0;padding:8px 12px;border-left:3px solid var(--am);background:#f6c4531a;border-radius:0 8px 8px 0}
+.msg{text-align:center;min-height:30px;font-weight:700;font-size:1.05rem}
+.bad{color:var(--rd)}.good{color:var(--cy)}
+.blur .rec,.blur .drug{filter:blur(6px)}
+.reveal{text-align:center;margin:8px 0}.reveal h2{margin:0;font-size:clamp(1.3rem,4vw,2rem);color:var(--am)}
+.xp{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px 18px;max-width:700px;margin:10px auto}
+.xp h3{margin:0 0 6px;color:var(--cy)}.xp p{margin:6px 0}.xp summary{cursor:pointer;color:var(--am)}
+.end{text-align:center;padding:30px 0}.end .big{font-size:3rem;color:var(--am);font-weight:700}
+footer{text-align:center;padding:14px;color:var(--mu);font-size:.8rem;border-top:1px solid var(--line)}
+footer b{color:var(--tx)}
+@media(max-width:760px){.arena{grid-template-columns:1fr 1fr}.lig{grid-column:1/-1;order:-1}.col{display:contents}}
+@media(prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<header><h1>DRUG–RECEPTOR BINDING CHALLENGE</h1><div class="sub">UiTM Diploma in Pharmacy (PH110)</div></header>
+<div class="bar"><span id="qn"></span><span id="sc"></span></div>
+<div class="prog"><i id="pg"></i></div>
+<main id="app"></main>
+<footer>Developed by <b>Faiz Zulkifli</b> &copy; 2026 &middot; For educational use only</footer>
+<script>
+// Fingerprint pool: [location, main effect, family]
+const P={HRT:["Heart","Increased heart rate and contractility","GPCR"],AIR:["Bronchial smooth muscle","Smooth muscle relaxation","GPCR"],CNS:["Central nervous system","Modulation of neuronal signalling","GPCR"],GLD:["Glandular tissue","Increased secretion","GPCR"],PAR:["Gastric parietal cells","Increased acid secretion","GPCR"],NMJ:["Neuromuscular junction","Skeletal muscle contraction","Ligand-gated ion channel"],VAS:["Vascular smooth muscle","Vasoconstriction","GPCR"],LIV:["Liver, muscle and fat cells","Increased glucose uptake","Enzyme-linked receptor"],NUC:["Intracellular compartment","Alters gene transcription","Intracellular receptor"]};
+// [drug, use, receptor, action, family, main effect, correct fingerprint, distractors, hints, why, extra]
+const Q=[
+["Adrenaline","Emergency drug that stimulates the heart","β₁-Adrenergic Receptor","Agonist","GPCR","Increased heart rate and contractility","HRT",["AIR","CNS","GLD"],["Used in cardiac arrest to restart and strengthen the heartbeat.","This receptor is found in the pacemaker and muscle of the heart.","Its activation increases heart rate and force of contraction."],"Adrenaline activates β₁-adrenergic receptors in the heart, increasing heart rate and contractility.","β₁ receptors couple to Gs, raising cAMP and calcium entry in cardiac cells."],
+["Salbutamol","Used to relieve bronchospasm","β₂-Adrenergic Receptor","Agonist","GPCR","Bronchodilation","AIR",["HRT","CNS","GLD"],["This drug is commonly used to relieve bronchospasm.","The target receptor is associated with relaxation of airway smooth muscle.","Activation of this receptor produces bronchodilation."],"Salbutamol activates β₂-adrenergic receptors and relaxes bronchial smooth muscle, producing bronchodilation.","β₂ activation involves G-protein signalling and increases intracellular cAMP."],
+["Atropine","Used for bradycardia and to dry secretions","Muscarinic Receptor","Antagonist","GPCR","Reduced parasympathetic effects",["Parasympathetic target organs","Reduced parasympathetic activity when blocked","GPCR"],["AIR","NMJ","LIV"],["Used to treat bradycardia and reduce secretions before surgery.","It opposes the 'rest and digest' branch of the autonomic nervous system.","It competitively blocks receptors for acetylcholine released by parasympathetic nerves."],"Atropine blocks muscarinic acetylcholine receptors and reduces parasympathetic effects.","Atropine is a competitive, non-selective antagonist at M1–M5 receptors."],
+["Pilocarpine","Used for dry mouth and glaucoma","Muscarinic Receptor","Agonist","GPCR","Increased secretions",["Glands and smooth muscle","Increased secretions","GPCR"],["HRT","NMJ","VAS"],["Used for dry mouth and to lower intraocular pressure in glaucoma.","It mimics acetylcholine at parasympathetic target organs.","Stimulation produces salivation, sweating and pupil constriction."],"Pilocarpine activates muscarinic receptors and can increase glandular secretions.","Pilocarpine is a partial muscarinic agonist; excess dosing causes cholinergic side effects."],
+["Nicotine","Stimulant found in tobacco","Nicotinic Acetylcholine Receptor","Agonist","Ligand-gated ion channel","Rapid neuronal and muscle signalling",["Neurons and neuromuscular junction","Rapid neuronal/muscle signalling","Ligand-gated ion channel"],["AIR","HRT","GLD"],["Found in tobacco; stimulates autonomic ganglia and skeletal muscle.","This receptor is a fast channel, not a G-protein coupled receptor.","Acetylcholine binding opens a cation channel, causing rapid depolarisation."],"Nicotine activates nicotinic acetylcholine receptors, which are ligand-gated ion channels.","Nicotinic receptors are pentameric; Na⁺ influx depolarises the cell within milliseconds."],
+["Atenolol","Used for hypertension and angina","β₁-Adrenergic Receptor","Antagonist","GPCR","Reduced heart rate and contractility",["Cardiac tissue","Mediates sympathetic stimulation of the heart","GPCR"],["AIR","CNS","VAS"],["Used in hypertension, angina and arrhythmias.","It reduces the effect of sympathetic stimulation on the heart.","Blocking this receptor lowers heart rate and force of contraction."],"Atenolol blocks β₁ receptors in the heart, reducing heart rate and contractility.","Atenolol is cardioselective, so it is safer than non-selective blockers in mild asthma."],
+["Morphine","Used for severe pain","μ-Opioid Receptor","Agonist","GPCR","Analgesia",["Brain and spinal cord","Reduced pain transmission","GPCR"],["HRT","AIR","PAR"],["Used for severe pain.","It acts on pathways that transmit and perceive pain.","Endogenous endorphins act on the same receptor to produce analgesia."],"Morphine activates μ-opioid receptors in the CNS, reducing pain transmission.","μ receptors couple to Gi/o, lowering cAMP and hyperpolarising neurons."],
+["Chlorphenamine","Antihistamine for allergy and itch","H₁ Receptor","Antagonist (inverse agonist)","GPCR","Reduced allergic response",["Sensory nerves and vascular tissue","Mediates itch, vasodilation and allergic response","GPCR"],["PAR","HRT","NMJ"],["An antihistamine used for allergic rhinitis and urticaria.","It blocks the receptor histamine uses to cause itch and vasodilation.","First-generation drugs of this class also cause drowsiness."],"Chlorphenamine blocks H₁ receptors and reduces allergic symptoms.","H₁ receptors couple to Gq (IP₃/DAG signalling)."],
+["Famotidine","Used for peptic ulcer and reflux","H₂ Receptor","Antagonist","GPCR","Reduced gastric acid secretion","PAR",["AIR","NMJ","CNS"],["Used for peptic ulcer and acid reflux.","Histamine stimulates this receptor to drive acid release.","Blocking it reduces gastric acid secretion."],"Famotidine blocks H₂ receptors on parietal cells, reducing gastric acid secretion.","H₂ receptors couple to Gs and raise cAMP, which activates the proton pump."],
+["Diazepam","Used for anxiety, seizures and muscle spasm","GABA-A Receptor","Positive allosteric modulator","Ligand-gated ion channel","Neuronal inhibition",["Central nervous system","Neuronal inhibition","Ligand-gated ion channel"],["NMJ","HRT","GLD"],["Used for anxiety, seizures and muscle spasm.","It enhances the main inhibitory neurotransmitter of the brain.","The receptor is a chloride channel; enhancing it hyperpolarises neurons."],"Diazepam enhances GABA action at GABA-A receptors, producing CNS inhibition.","Benzodiazepines increase the frequency of channel opening; they do not open it alone."],
+["Insulin","Lowers blood glucose","Insulin Receptor","Agonist","Enzyme-linked receptor","Increased glucose uptake","LIV",["HRT","NMJ","GLD"],["Lowers blood glucose in diabetes mellitus.","It acts on cells that take up and store glucose, not through a G-protein.","The receptor has intrinsic tyrosine kinase activity."],"Insulin activates its receptor on target cells, increasing glucose uptake.","Receptor autophosphorylation triggers PI3K–Akt signalling and GLUT4 translocation."],
+["Prednisolone","Anti-inflammatory and immunosuppressant","Glucocorticoid Receptor","Agonist","Intracellular receptor","Anti-inflammatory gene regulation","NUC",["VAS","CNS","AIR"],["Used as an anti-inflammatory and immunosuppressant.","It is lipid-soluble and acts inside the cell.","The drug–receptor complex moves to the nucleus and changes gene expression."],"Prednisolone binds intracellular glucocorticoid receptors and alters gene transcription.","Effects are slow (hours) because new protein synthesis is required."],
+["Losartan","Used for hypertension and heart failure","AT₁ Receptor","Antagonist","GPCR","Vasodilation, lower blood pressure",["Blood vessels and adrenal cortex","Vasoconstriction and aldosterone release","GPCR"],["AIR","GLD","NMJ"],["Used in hypertension and heart failure.","It opposes the vasoconstrictor peptide of the renin–angiotensin system.","Blocking this receptor causes vasodilation and less aldosterone effect."],"Losartan blocks angiotensin II at AT₁ receptors, lowering blood pressure.","Unlike ACE inhibitors, ARBs rarely cause dry cough."],
+["Phenylephrine","Nasal decongestant, raises blood pressure","α₁-Adrenergic Receptor","Agonist","GPCR","Vasoconstriction","VAS",["HRT","PAR","NMJ"],["Used as a nasal decongestant and to raise blood pressure.","It constricts smooth muscle in the vascular wall.","A sympathetic receptor of blood vessels that drives vasoconstriction."],"Phenylephrine activates α₁ receptors on vascular smooth muscle, causing vasoconstriction.","α₁ receptors couple to Gq, increasing IP₃ and intracellular calcium."],
+["Clonidine","Centrally acting antihypertensive","α₂-Adrenergic Receptor","Agonist","GPCR","Reduced sympathetic outflow",["Presynaptic terminals and brainstem","Reduced sympathetic outflow","GPCR"],["HRT","AIR","GLD"],["Used for hypertension; it acts in the brain.","It acts on negative-feedback sites that reduce noradrenaline release.","Activation lowers sympathetic outflow from the brainstem."],"Clonidine activates α₂ receptors, reducing sympathetic outflow and blood pressure.","α₂ receptors couple to Gi, decreasing cAMP."],
+["Rocuronium","Skeletal muscle relaxant in anaesthesia","Nicotinic Receptor (Neuromuscular Junction)","Antagonist","Ligand-gated ion channel","Skeletal muscle paralysis","NMJ",["CNS","VAS","PAR"].map(k=>k==="CNS"?"CNS":k),["Used in anaesthesia to relax skeletal muscle.","It blocks transmission between motor nerve and muscle.","It competitively blocks acetylcholine at a ligand-gated channel."],"Rocuronium competitively blocks nicotinic receptors at the neuromuscular junction.","Neostigmine reverses this block by raising acetylcholine levels."],
+["Ondansetron","Antiemetic for chemotherapy","5-HT₃ Receptor","Antagonist","Ligand-gated ion channel","Reduced nausea and vomiting",["Brainstem trigger zone and gut afferents","Triggers nausea and vomiting","Ligand-gated ion channel"],["PAR","AIR","VAS"],["Used to prevent chemotherapy-induced vomiting.","It acts on the brainstem vomiting trigger zone and gut afferents.","The receptor is a serotonin-gated ion channel."],"Ondansetron blocks 5-HT₃ receptors, reducing nausea and vomiting.","5-HT₃ is the only serotonin receptor that is an ion channel."],
+["Haloperidol","Antipsychotic for schizophrenia","D₂ Receptor","Antagonist","GPCR","Reduced psychotic symptoms",["Mesolimbic pathways of the brain","Inhibitory modulation of dopamine signalling","GPCR"],["HRT","PAR","NMJ"],["An antipsychotic used in schizophrenia.","It dampens excess dopamine signalling in brain pathways.","Blocking this receptor reduces hallucinations and delusions."],"Haloperidol blocks D₂ receptors in mesolimbic pathways, reducing psychotic symptoms.","Blocking D₂ in the nigrostriatal pathway can cause extrapyramidal side effects."],
+["Tamoxifen","Used in oestrogen-sensitive breast cancer","Oestrogen Receptor","Antagonist (in breast)","Intracellular receptor","Blocked oestrogen-driven growth",["Breast tissue (inside the cell)","Regulates oestrogen-responsive genes","Intracellular receptor"],["LIV","NMJ","AIR"],["Used in oestrogen-sensitive breast cancer.","It acts on a receptor inside the cell that regulates transcription.","It blocks oestrogen signalling in breast tissue."],"Tamoxifen blocks oestrogen receptors in breast tissue, slowing tumour growth.","Tamoxifen is a SERM: antagonist in breast, partial agonist in the uterus and bone."],
+["Ipratropium","Inhaled drug for COPD and asthma","Muscarinic Receptor (M₃)","Antagonist","GPCR","Reduced bronchoconstriction",["Airway smooth muscle and glands","Bronchoconstriction and mucus secretion","GPCR"],["HRT","NMJ","LIV"],["Inhaled drug for COPD.","It blocks the parasympathetic tone that narrows airways.","Blocking this receptor reduces bronchoconstriction and mucus secretion."],"Ipratropium blocks muscarinic receptors in the airways, causing bronchodilation.","Being a quaternary amine, it is poorly absorbed, which limits systemic effects."]
+];
+const $=s=>document.querySelector(s),app=$('#app');
+let i=0,score=0,hints=0,tries=0,done=false,order=[],hist=[];
+const fp=x=>typeof x==="string"?P[x]:x;
+const shuf=a=>{a=a.slice();for(let k=a.length-1;k>0;k--){const j=Math.random()*(k+1)|0;[a[k],a[j]]=[a[j],a[k]]}return a};
+function rec(seed){let s=seed*9301+49297,r=()=>(s=(s*9301+49297)%233280)/233280,o='',rot=r()*50-25;
+ for(let k=0;k<6;k++){const x=22+k*28+r()*6,t=r()*14-7;o+=`<rect x="${x}" y="${8+r()*5}" width="14" height="${60+r()*8}" rx="7" fill="#2d6a8a" opacity=".85" transform="rotate(${t} ${x+7} 42)"/>`}
+ const px=70+r()*40,pw=30+r()*6;
+ return `<svg class="rec" viewBox="0 0 200 84" aria-hidden="true"><g transform="rotate(${rot} 100 42)">${o}<path d="M${px} 8 q${pw/2} ${34+r()*4} ${pw} 0 q-${pw/2} -6 -${pw} 0z" fill="#0d1828" stroke="#4fd1c5" stroke-width="1.4"/><circle cx="${px+pw/2}" cy="${30+r()*6}" r="${2+r()*2}" fill="#4fd1c5" opacity=".6"/></g></svg>`}
+function load(){const q=Q[i];done=false;hints=0;tries=0;
+ order=shuf([{c:1,f:fp(q[6])},...q[7].map(k=>({c:0,f:fp(k)}))]);
+ const L='ABCD';const card=(o,n)=>`<div class="card" id="t${n}" data-n="${n}">${rec(i*7+n+1)}<h3>TARGET ${L[n]}</h3><dl><dt>Primary location</dt><dd>${o.f[0]}</dd><dt>Main effect</dt><dd>${o.f[1]}</dd><dt>Receptor family</dt><dd>${o.f[2]}</dd></dl><button class="bind" data-n="${n}">Bind here</button></div>`;
+ $('#qn').textContent=`QUESTION ${String(i+1).padStart(2,'0')} / ${Q.length}`;$('#sc').textContent=`Score: ${score}`;$('#pg').style.width=(i/Q.length*100)+'%';
+ app.innerHTML=`<div class="q">Which receptor mediates the main therapeutic effect of this drug?</div>
+ <div class="arena" id="arena"><div class="col">${card(order[0],0)}${card(order[2],2)}</div>
+ <div class="lig"><span class="lbl">LIGAND</span><div class="drug" id="drug" tabindex="0" aria-label="Drag ${q[0]} onto a target, or use the Bind buttons"><b>${q[0].toUpperCase()}</b><small>drag to a target</small></div><div class="use">${q[1]}</div></div>
+ <div class="col">${card(order[1],1)}${card(order[3],3)}</div></div>
+ <div class="msg" id="msg"></div><div class="btns" id="btns"><button class="b" id="hb">Hint 1 (max +8)</button></div><div class="hints" id="hints"></div><div id="after"></div>`;
+ $('#hb').onclick=hint;document.querySelectorAll('.bind').forEach(b=>b.onclick=()=>attempt(+b.dataset.n));drag()}
+function hint(){if(done||hints>=3)return;const q=Q[i];hints++;$('#hints').insertAdjacentHTML('beforeend',`<p><b>Hint ${hints}:</b> ${q[8][hints-1]}</p>`);
+ const b=$('#hb');if(hints>=3){b.disabled=true;b.textContent='No more hints'}else b.textContent=`Hint ${hints+1} (max +${10-2*(hints+1)})`}
+function drag(){const d=$('#drug');let sx,sy,on=0;
+ d.onpointerdown=e=>{if(done)return;on=1;sx=e.clientX;sy=e.clientY;d.setPointerCapture(e.pointerId);d.classList.add('drag')};
+ d.onpointermove=e=>{if(!on)return;d.style.transform=`translate(${e.clientX-sx}px,${e.clientY-sy}px)`;const t=at(e);document.querySelectorAll('.card').forEach(c=>c.classList.toggle('over',c===t))};
+ d.onpointerup=e=>{if(!on)return;on=0;d.classList.remove('drag');const t=at(e);document.querySelectorAll('.card').forEach(c=>c.classList.remove('over'));d.style.transform='';if(t&&!t.classList.contains('out'))attempt(+t.dataset.n)};
+ d.onkeydown=e=>{if(e.key==='h')hint()}}
+function at(e){return [...document.querySelectorAll('.card')].find(c=>{const r=c.getBoundingClientRect();return e.clientX>r.left&&e.clientX<r.right&&e.clientY>r.top&&e.clientY<r.bottom})}
+function attempt(n){if(done)return;const t=$('#t'+n);if(t.classList.contains('out'))return;
+ if(order[n].c)return win(n);
+ tries++;t.classList.add('out');const m=$('#msg');m.className='msg bad';
+ if(tries>=3){m.textContent='';return lose()}
+ m.textContent=`✕ NOT THIS TARGET (attempt ${tries} of 3)`;$('#drug').style.transform=''}
+function reveal(n,pts,ok){done=true;const q=Q[i],t=$('#t'+n),d=$('#drug');
+ document.querySelectorAll('.bind').forEach(b=>b.disabled=true);$('#btns').innerHTML='';
+ const a=$('#arena');
+ if(ok){const rt=t.querySelector('.rec').getBoundingClientRect(),dr=d.getBoundingClientRect();d.style.transform=`translate(${rt.left+rt.width/2-dr.left-dr.width/2}px,${rt.top+rt.height/2-dr.top-dr.height/2}px) scale(.6)`;
+  $('#msg').className='msg good';$('#msg').textContent='✓ BINDING SUCCESS'}
+ else{$('#msg').className='msg bad';$('#msg').textContent='TARGET IDENTIFIED';t.classList.remove('out');t.classList.add('over')}
+ setTimeout(()=>{a.classList.add('blur');$('#msg').className='msg';$('#msg').textContent='Analysing receptor interaction...';
+  setTimeout(()=>{a.classList.remove('blur');score+=pts;hist.push(pts);$('#sc').textContent=`Score: ${score}`;
+   $('#msg').innerHTML='';
+   $('#after').innerHTML=`<div class="reveal"><h2>${q[2]}</h2><div class="${pts?'good':'bad'}" style="font-weight:700">${ok?'✓ CORRECT':'✕ MISSED'} &nbsp; +${pts} POINTS</div></div>
+   <div class="xp"><h3>${q[2]}</h3><p><b>Drug:</b> ${q[0]}<br><b>Action:</b> ${q[3]}<br><b>Receptor family:</b> ${q[4]}<br><b>Main effect:</b> ${q[5]}</p><p><b>Why?</b> ${q[9]}</p><details><summary>Extra Knowledge</summary><p>${q[10]}</p></details></div>
+   <div class="btns"><button class="b p" id="nx">${i+1<Q.length?'Next question':'See results'}</button></div>`;
+   $('#nx').onclick=()=>{i++;i<Q.length?load():finish()};$('#nx').focus()},1100)},ok?900:500)}
+function win(n){reveal(n,[10,8,6,4][hints],true)}
+function lose(){reveal(order.findIndex(o=>o.c),0,false)}
+function finish(){$('#pg').style.width='100%';const mx=Q.length*10,p=Math.round(score/mx*100);
+ app.innerHTML=`<div class="end"><div class="lbl">FINAL SCORE</div><div class="big">${score} / ${mx}</div><p>${p}% &mdash; ${p>=80?'Excellent receptor reasoning.':p>=50?'Good progress. Review the explanations and try again.':'Keep practising: link each drug to its tissue and effect.'}</p><button class="b p" id="rs">Play again</button></div>`;
+ $('#rs').onclick=()=>{i=0;score=0;hist=[];load()}}
+load();
+</script>
+</body>
+</html>

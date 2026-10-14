@@ -1,0 +1,2140 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+  <base target="_top">
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+  <style>
+
+    body { background-color: #f4f7f6; padding: 20px; font-family: 'Segoe UI', sans-serif; }
+
+    .card { border: none; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); margin-bottom: 20px; }
+
+    .hospital-header { background: #0d6efd; color: white; padding: 10px 20px; border-radius: 12px 12px 0 0; font-weight: bold; }
+
+    .stats-card { background: white; border-radius: 12px; padding: 15px; text-align: center; border-bottom: 4px solid #0d6efd; min-height: 110px;}
+
+    .filter-section { background: white; padding: 20px; border-radius: 12px; margin-bottom: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+
+    .table-container { background: white; border-radius: 12px; overflow: hidden; }
+
+
+
+    /* Collapsible Hub Styles */
+
+    .feedback-collapsible-btn {
+
+      width: 100%;
+
+      text-align: left;
+
+      background: #ffffff;
+
+      border: 1px solid #dee2e6;
+
+      border-radius: 12px;
+
+      padding: 15px 20px;
+
+      font-weight: bold;
+
+      color: #2c3e50;
+
+      display: flex;
+
+      justify-content: space-between;
+
+      align-items: center;
+
+      box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+
+      transition: all 0.2s ease;
+
+    }
+
+    .feedback-collapsible-btn:hover {
+
+      background: #f8f9fa;
+
+      border-color: #0d6efd;
+
+    }
+
+
+
+    /* Red Alert Bubble Styles */
+
+    .unread-bubble {
+
+      background-color: #dc3545 !important;
+
+      color: white !important;
+
+      font-size: 13px !important;
+
+      font-weight: 700 !important;
+
+      padding: 6px 12px !important;
+
+      border-radius: 20px !important;
+
+      box-shadow: 0 0 8px rgba(220, 53, 69, 0.4);
+
+      animation: pulse 2s infinite;
+
+    }
+
+
+
+    @keyframes pulse {
+
+      0% { transform: scale(1); }
+
+      50% { transform: scale(1.05); }
+
+      100% { transform: scale(1); }
+
+    }
+
+
+
+    /* Live late-attendance alert. Uses the same 8:00 AM rule already used by the Monthly Report. */
+
+    .late-row td {
+
+      background-color: #fff0f0 !important;
+
+    }
+
+
+
+    .late-row {
+
+      border-left: 5px solid #dc3545 !important;
+
+    }
+
+
+
+    .late-alert-text {
+
+      color: #dc3545;
+
+      font-weight: 800;
+
+      font-size: 11px;
+
+      margin-top: 3px;
+
+      animation: lateBlink 1s infinite;
+
+    }
+
+
+
+    .late-dashboard-alert {
+
+      display: none;
+
+      background-color: #dc3545;
+
+      color: #fff;
+
+      padding: 6px 12px;
+
+      border-radius: 20px;
+
+      font-size: 12px;
+
+      font-weight: 800;
+
+      box-shadow: 0 0 8px rgba(220, 53, 69, 0.35);
+
+      animation: lateBlink 1s infinite;
+
+    }
+
+
+
+    @keyframes lateBlink {
+
+      0%, 100% { opacity: 1; }
+
+      50% { opacity: 0.45; }
+
+    }
+
+
+
+    .feedback-card {
+
+      background: #fff;
+
+      border: 1px solid #e2e8f0;
+
+      border-radius: 8px;
+
+      margin-bottom: 12px;
+
+      overflow: hidden;
+
+      box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+
+      transition: box-shadow 0.2s ease;
+
+    }
+
+    .feedback-card:hover {
+
+      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+
+      border-color: #cbd5e1;
+
+    }
+
+    .feedback-card-header {
+
+      padding: 16px;
+
+      display: grid;
+
+      grid-template-columns: 100px 2fr 1.5fr 1fr 100px;
+
+      align-items: center;
+
+      cursor: pointer;
+
+      background: #fff;
+
+      user-select: none;
+
+    }
+
+    .badge {
+
+      padding: 4px 10px;
+
+      border-radius: 50px;
+
+      font-size: 12px;
+
+      font-weight: 600;
+
+      display: inline-block;
+
+      text-align: center;
+
+    }
+
+    .badge-open { background: #eef9f2; color: #1e7e34; border: 1px solid #c3e6cb; }
+
+    .badge-replied { background: #f8f9fa; color: #6c757d; border: 1px solid #e2e8f0; }
+
+    .feedback-card-content {
+
+      display: none;
+
+      background: #fafbfc;
+
+      border-top: 1px solid #f1f5f9;
+
+      padding: 20px;
+
+    }
+
+    .thread-bubble {
+
+      padding: 12px 16px;
+
+      border-radius: 8px;
+
+      margin-bottom: 10px;
+
+      max-width: 80%;
+
+    }
+
+    .bubble-preceptor {
+
+      background: #ebf5ff;
+
+      border-left: 4px solid #3182ce;
+
+    }
+
+    .bubble-admin {
+
+      background: #f7fafc;
+
+      border-left: 4px solid #718096;
+
+      margin-left: auto;
+
+    }
+
+    .inline-reply-container {
+
+      background: #fff;
+
+      border: 1px solid #e2e8f0;
+
+      border-radius: 6px;
+
+      padding: 12px;
+
+      margin-top: 15px;
+
+    }
+
+    .inline-reply-container textarea {
+
+      width: 100%;
+
+      border: 1px solid #cbd5e1;
+
+      border-radius: 4px;
+
+      padding: 8px;
+
+      box-sizing: border-box;
+
+    }
+
+    .btn-send-reply {
+
+      margin-top: 8px;
+
+      background: #2ecc71;
+
+      color: #fff;
+
+      border: none;
+
+      padding: 6px 14px;
+
+      font-weight: 600;
+
+      border-radius: 4px;
+
+      cursor: pointer;
+
+    }
+
+  </style>
+
+</head>
+
+<body>
+
+
+
+  <div class="container-fluid">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+
+      <div>
+
+        <h3 class="text-primary fw-bold mb-0">InternTrack PHARMACY ADMIN DASHBOARD</h3>
+
+        <small id="viewLabel" class="text-muted fw-bold">LIVE VIEW: TODAY</small>
+
+      </div>
+
+      <div class="d-flex align-items-center gap-2">
+
+        <span id="lateDashboardAlert" class="late-dashboard-alert">🚨 0 LATE ATTENDEE(S)</span>
+
+        <button class="btn btn-sm btn-outline-primary" onclick="goHome()">← Back to Clock-In</button>
+
+      </div>
+
+    </div>
+
+
+
+    <!-- Attendance Overview Statistics Panels -->
+
+    <div class="row mb-4 g-3">
+
+      <div class="col-md-3"><div class="stats-card shadow-sm"><h6>Total Students</h6><h3 id="statTotal">0</h3></div></div>
+
+      <div class="col-md-3"><div class="stats-card shadow-sm"><h6>Active (Clocked In)</h6><h3 class="text-warning" id="statPresent">0</h3></div></div>
+
+      <div class="col-md-3"><div class="stats-card shadow-sm"><h6>Completed Day</h6><h3 class="text-success" id="statCompleted">0</h3></div></div>
+
+      <div class="col-md-3"><div class="stats-card shadow-sm"><h6>Absent</h6><h3 class="text-danger" id="statAbsent">0</h3></div></div>
+
+    </div>
+
+
+
+    <!-- Filters and Core Search Controls -->
+
+    <div class="filter-section shadow-sm">
+        <div class="row g-3">
+          <div class="col-md-3">
+            <label class="form-label small fw-bold">Student Access View</label>
+            <select id="adminStudentScope" class="form-select" onchange="changeAdminStudentScope()">
+              <option value="assigned" selected>My Assigned Students</option>
+              <option value="all">All Students (Review)</option>
+            </select>
+            <small class="text-muted">Applies to Live Attendance and Master Matrix.</small>
+          </div>
+
+        <div class="col-md-2">
+
+          <label class="form-label small fw-bold">Search Name/ID</label>
+
+          <input type="text" id="nameFilter" class="form-control" placeholder="Search..." oninput="applyFilters()">
+
+        </div>
+
+        <div class="col-md-2">
+
+          <label class="form-label small fw-bold">Hospital Filter</label>
+
+          <select id="hospitalFilter" class="form-select" onchange="applyFilters()"></select>
+
+        </div>
+
+        <div class="col-md-2">
+
+          <label class="form-label small fw-bold">Report Month</label>
+
+          <select id="reportMonthFilter" class="form-select" onchange="loadAll()">
+
+            <option value="1">Jan</option><option value="2">Feb</option><option value="3">Mar</option>
+
+            <option value="4">Apr</option><option value="5">May</option><option value="6">Jun</option>
+
+            <option value="7">Jul</option><option value="8">Aug</option><option value="9">Sep</option>
+
+            <option value="10">Oct</option><option value="11">Nov</option><option value="12">Dec</option>
+
+          </select>
+
+        </div>
+
+        <div class="col-md-2">
+
+          <label class="form-label small fw-bold">Report Year</label>
+
+          <select id="reportYearFilter" class="form-select" onchange="loadAll()">
+
+            <option value="2026">2026</option><option value="2025">2025</option>
+
+          </select>
+
+        </div>
+
+        <div class="col-md-2">
+
+          <label class="form-label small fw-bold">Export Year</label>
+
+          <select id="yearFilter" class="form-select">
+
+            <option value="2026">2026</option>
+
+            <option value="2025">2025</option>
+
+            <option value="2024">2024</option>
+
+          </select>
+
+        </div>
+
+        <div class="col-md-2 d-flex align-items-end">
+
+          <button class="btn btn-primary w-100" onclick="loadAll()">🔄 Refresh</button>
+
+        </div>
+
+        <div class="col-md-2 d-flex align-items-end">
+
+          <button class="btn btn-success w-100" onclick="exportHospitalData()">📥 Export Yearly</button>
+
+        </div>
+
+      </div>
+
+    </div>
+
+
+
+    <!-- INTERNSHIP BATCH CONFIGURATION -->
+
+    <div class="card shadow-sm mb-4" id="batchConfigCard">
+
+      <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+
+        <div>
+
+          <h5 class="mb-0 fw-bold">⚙️ Internship Batch Configuration</h5>
+
+          <small>Configure dates and semester-wide MC / Semester Leave limits for B001-B004.</small>
+
+        </div>
+
+        <button class="btn btn-light btn-sm" onclick="loadBatchConfiguration()">🔄 Reload</button>
+
+      </div>
+
+
+
+      <div class="card-body">
+
+        <div id="batchConfigMessage"></div>
+
+        <div class="table-responsive">
+
+          <table class="table table-bordered align-middle mb-3" id="batchConfigTable">
+
+            <thead class="table-light">
+
+              <tr>
+
+                <th>Batch ID</th>
+
+                <th>Batch Name</th>
+
+                <th>Start Date</th>
+
+                <th>End Date</th>
+
+                <th>Semester Leave Limit</th>
+
+                <th>MC Limit</th>
+
+                <th>Status</th>
+
+              </tr>
+
+            </thead>
+
+            <tbody id="batchConfigBody">
+
+              <tr><td colspan="7" class="text-center text-muted py-4">Loading batch configuration...</td></tr>
+
+            </tbody>
+
+          </table>
+
+        </div>
+
+
+
+        <div class="d-flex justify-content-between align-items-center">
+
+          <small class="text-muted">Limits are configuration values. Students are counted only within their assigned batch period.</small>
+
+          <button id="saveBatchConfigBtn" class="btn btn-success px-4" onclick="saveBatchConfiguration()">💾 Save Batch Configuration</button>
+
+        </div>
+
+      </div>
+
+    </div>
+
+
+
+    <!-- YEARLY BATCH PROGRESS MASTER MATRIX -->
+
+    <div class="card shadow-sm mb-4">
+
+      <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
+
+        <div>
+
+          <h5 class="mb-0 fw-bold">📈 Yearly Batch Progress Master Matrix</h5>
+
+          <small>Dynamic multi-month tracking based on batch start and end dates.</small>
+
+        </div>
+
+        <button class="btn btn-light btn-sm" onclick="loadMasterMatrix()">🔄 Refresh Matrix</button>
+
+      </div>
+
+
+
+      <div class="card-body">
+
+        <div class="d-flex gap-3 mb-3 small text-muted align-items-center">
+
+          <span>Legend:</span>
+
+          <span class="badge bg-light text-dark border px-2 py-1">■ Not Submitted</span>
+
+          <span class="badge bg-warning text-dark px-2 py-1">■ Pending Review</span>
+
+          <span class="badge bg-primary text-white px-2 py-1">■ Approved</span>
+
+        </div>
+
+        <div id="masterMatrixContainer">
+
+          <div class="text-center py-4 text-muted"><span class="spinner-border spinner-border-sm"></span> Loading master matrix...</div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+
+
+    <!-- MAIN ATTENDANCE MONITORING REPORT CONTAINER -->
+
+    <div id="report" class="mb-4"></div>
+
+
+
+    <!-- COLLAPSIBLE MASTER CONTAINER FOR FEEDBACK & CONVERSATIONS -->
+
+    <div class="mb-4">
+
+      <button class="feedback-collapsible-btn" type="button" data-bs-toggle="collapse" data-bs-target="#feedbackCollapseArea" aria-expanded="false" aria-controls="feedbackCollapseArea">
+
+        <span>💬 Student Feedback & Incident Logs</span>
+
+        <span class="badge unread-bubble" id="feedbackCountBadge" style="display: none;">0 Unresolved</span>
+
+      </button>
+
+
+
+      <div class="collapse" id="feedbackCollapseArea">
+
+        <div class="card card-body mt-2 shadow-sm border" style="background-color: #fafbfc; border-radius: 12px;">
+
+
+
+          <div class="feedback-header d-flex justify-content-between align-items-center border-bottom pb-2 mb-3">
+
+            <h5 class="fw-bold text-secondary mb-0">Active Feedback Threads</h5>
+
+            <button class="btn btn-sm btn-primary" onclick="loadUnifiedFeedbackDashboard()">🔄 Sync Threads</button>
+
+          </div>
+
+
+
+          <!-- Unified Accordion Container -->
+
+          <div id="unifiedFeedbackContainer" class="mb-4">
+
+            <div style="text-align:center; padding: 20px; color: #718096;">Loading feedback dashboard...</div>
+
+          </div>
+
+
+
+          <!-- Historical Table -->
+
+          <h5 class="fw-bold text-secondary border-bottom pb-2 mb-3">All Historic logs</h5>
+
+          <div class="table-responsive">
+
+            <table class="table table-bordered table-striped align-middle bg-white" style="font-size: 13px;">
+
+              <thead class="table-light">
+
+                <tr>
+
+                  <th style="width: 15%;">Date</th>
+
+                  <th style="width: 25%;">Student Profile</th>
+
+                  <th style="width: 20%;">Hospital Assigned</th>
+
+                  <th style="width: 20%;">Handled Person / Role</th>
+
+                  <th style="width: 20%;">Logged Message Text</th>
+
+                </tr>
+
+              </thead>
+
+              <tbody id="feedbackHistoryBody">
+
+                <tr>
+
+                  <td colspan="5" style="text-align:center; padding:15px; color:#666;">No historical records loaded yet.</td>
+
+                </tr>
+
+              </tbody>
+
+            </table>
+
+          </div>
+
+
+
+        </div>
+
+      </div>
+
+    </div>
+
+
+
+  </div>
+
+
+
+  <!-- BootStrap Bundle JS including Popper for collapsible components -->
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+  <script>
+
+    let rawData = { grouped: {}, hospitals: [] };
+
+
+
+    document.addEventListener("DOMContentLoaded", function() {
+
+      document.getElementById('reportMonthFilter').value = new Date().getMonth() + 1;
+
+      document.getElementById('reportYearFilter').value = new Date().getFullYear();
+
+      loadAll();
+
+      loadBatchConfiguration();
+
+      loadUnifiedFeedbackDashboard();
+
+      loadMasterMatrix();
+
+    });
+
+
+
+function isAllStudentsView() {
+  return document.getElementById('adminStudentScope')?.value === 'all';
+}
+
+function changeAdminStudentScope() {
+  loadAll();
+  loadMasterMatrix();
+}
+
+function loadMasterMatrix() {
+
+      const container = document.getElementById('masterMatrixContainer');
+
+      container.innerHTML = '<div class="text-center py-4"><span class="spinner-border spinner-border-sm"></span> Building yearly matrix from batch configurations...</div>';
+
+
+
+      google.script.run
+
+        .withSuccessHandler(res => {
+
+          if (!res || !res.success) {
+
+            container.innerHTML = `<div class="alert alert-danger">Could not load matrix: ${res?.error || 'Unknown error'}</div>`;
+
+            return;
+
+          }
+
+
+
+          if (!res.batches || res.batches.length === 0) {
+
+            container.innerHTML = '<div class="alert alert-warning text-center">No active batches configured.</div>';
+
+            return;
+
+          }
+
+
+
+          let html = '';
+
+
+
+          res.batches.forEach((batch, index) => {
+
+            if (!batch.months || batch.months.length === 0) return;
+
+            const collapseId = `batchCollapse_${batch.batchId}_${index}`;
+
+
+
+            html += `
+
+              <div class="card border mb-3 shadow-sm">
+
+                <div class="card-header bg-light d-flex justify-content-between align-items-center py-2" 
+
+                     style="cursor: pointer;" 
+
+                     data-bs-toggle="collapse" 
+
+                     data-bs-target="#${collapseId}" 
+
+                     aria-expanded="${index === 0 ? 'true' : 'false'}" 
+
+                     aria-controls="${collapseId}">
+
+                  <div>
+
+                    <span class="fw-bold text-primary">🚀 Batch: ${escapeHtml(batch.batchId)} - ${escapeHtml(batch.batchName || '')}</span>
+
+                    <small class="text-muted ms-2">(${batch.startDate || ''} to ${batch.endDate || ''})</small>
+
+                  </div>
+
+                  <div>
+
+                    <span class="badge bg-secondary me-2">${batch.students.length} Students</span>
+
+                    <span class="small text-muted">▼ Click to Expand/Collapse</span>
+
+                  </div>
+
+                </div>
+
+
+
+                <div class="collapse ${index === 0 ? 'show' : ''}" id="${collapseId}">
+
+                  <div class="card-body p-0">
+
+                    <div class="table-responsive m-0">
+
+                      <table class="table table-bordered table-sm align-middle text-center mb-0" style="font-size: 10px;">
+
+                        <thead class="table-light">
+
+                          <tr>
+
+                            <th style="width: 160px; text-align: left; padding-left: 10px;">Student Name / ID</th>
+
+                            <th style="width: 120px;">Hospital</th>`;
+
+
+
+            // 1. Dynamic Monthly Columns Header
+
+            batch.months.forEach(m => {
+
+              html += `<th style="min-width: 80px;">${m.label}</th>`;
+
+            });
+
+
+
+            // 2. Individual Header Columns for Attendance Totals
+
+            html += `
+
+                            <th style="background-color: #e3f2fd; width: 45px;">ATT</th>
+
+                            <th style="background-color: #ffebee; width: 45px;">ABS</th>
+
+                            <th style="background-color: #fff8e1; width: 45px;">MC</th>
+
+                            <th style="background-color: #e8f5e9; width: 45px;">REP</th>
+
+                            <th style="background-color: #f3e5f5; width: 45px;">HOL</th>
+
+                            <th style="background-color: #efebe9; width: 45px;">SML</th>
+
+                          </tr>
+
+                        </thead>
+
+                        <tbody>`;
+
+
+
+            if (!batch.students || batch.students.length === 0) {
+
+              html += `<tr><td colspan="${8 + batch.months.length}" class="text-muted py-3">No students assigned to this batch.</td></tr>`;
+
+            } else {
+
+              batch.students.forEach(student => {
+
+                html += `
+
+                  <tr>
+
+                    <td style="text-align: left; padding-left: 10px;">
+
+                      <strong>${escapeHtml(student.name)}</strong><br>
+
+                      <span class="text-muted" style="font-size: 8.5px;">${escapeHtml(student.studentID)}</span>
+
+                    </td>
+
+                    <td><small>${escapeHtml(student.hospital || 'N/A')}</small></td>`;
+
+
+
+                // Render Monthly Status Badges with Permanent PDF Links
+
+                student.monthlyStatuses.forEach(ms => {
+
+                  let badgeClass = 'bg-secondary text-white';
+
+
+
+                  if (ms.status === 'PENDING_ADMIN' || ms.status === 'VERIFIED_BY_PRECEPTOR') {
+
+                    badgeClass = 'bg-warning text-dark fw-bold';
+
+                  } else if (ms.status === 'APPROVED') {
+
+                    badgeClass = 'bg-primary text-white fw-bold';
+
+                  }
+
+
+
+                  let badgeLabel = escapeHtml(ms.label);
+
+                  if (ms.scanUrl && ms.scanUrl.startsWith('http')) {
+
+                    badgeLabel = `<a href="${escapeHtml(ms.scanUrl)}" target="_blank" class="text-white text-decoration-underline" style="font-weight: bold;" title="Click to open PDF Report">📄 ${escapeHtml(ms.label)}</a>`;
+
+                  }
+
+
+
+                  let quickApproveHtml = "";
+
+                  if (ms.status === 'PENDING_ADMIN' || ms.status === 'VERIFIED_BY_PRECEPTOR') {
+
+                    quickApproveHtml = `<button class="btn btn-sm btn-success mt-1 w-100 py-0 px-1" style="font-size: 8px;" onclick="approveMatrixMonth('${student.studentID}', ${ms.month}, ${ms.year})">✓ Approve</button>`;
+
+                  }
+
+
+
+                  html += `
+
+                    <td>
+
+                      <div class="badge ${badgeClass} d-block p-1 shadow-sm">
+
+                        ${badgeLabel}
+
+                      </div>
+
+                      ${quickApproveHtml}
+
+                    </td>`;
+
+                });
+
+
+
+                // Render Separate Individual Summary Columns
+
+                const ts = student.totalStats || { att: 0, abs: 0, mc: 0, rep: 0, hol: 0, sml: 0 };
+
+                html += `
+
+                  <td style="background-color: #f4f9ff; font-weight: bold;">${ts.att}</td>
+
+                  <td style="background-color: #fff5f5; font-weight: bold; color: #c62828;">${ts.abs}</td>
+
+                  <td style="background-color: #fffde7; font-weight: bold; color: #f57f17;">${ts.mc}</td>
+
+                  <td style="background-color: #f1f8e9; font-weight: bold; color: #2e7d32;">${ts.rep}</td>
+
+                  <td style="background-color: #fbf4fc; font-weight: bold;">${ts.hol}</td>
+
+                  <td style="background-color: #f5f2f0; font-weight: bold;">${ts.sml}</td>
+
+                </tr>`;
+
+              });
+
+            }
+
+
+
+            html += `</tbody></table></div></div></div></div>`;
+
+          });
+
+
+
+          container.innerHTML = html || '<div class="alert alert-info">No batch data available to display.</div>';
+
+        })
+
+        .withFailureHandler(err => {
+
+          container.innerHTML = `<div class="alert alert-danger">System Error: ${escapeHtml(err.message)}</div>`;
+
+        })
+
+        .getBatchYearlyMasterMatrix(isAllStudentsView());
+
+    }
+
+
+
+    function approveMatrixMonth(studentId, month, year) {
+
+  if (!confirm(`Approve monthly report for Student ID ${studentId} (${month}/${year})?`)) {
+
+    return;
+
+  }
+
+
+
+  const btn = event.currentTarget;
+
+  const originalText = btn.innerHTML;
+
+  btn.disabled = true;
+
+  btn.innerHTML = '...';
+
+
+
+  google.script.run
+
+    .withSuccessHandler(res => {
+
+      if (res && res.success) {
+
+        const cell = btn.closest('td');
+
+        if (cell) {
+
+          // Update status badge background color and label
+
+          const badge = cell.querySelector('.badge');
+
+          if (badge) {
+
+            badge.className = 'badge bg-primary text-white fw-bold d-block p-1 shadow-sm';
+
+          }
+
+          // Remove the inline approve button
+
+          btn.remove();
+
+        }
+
+      } else {
+
+        btn.disabled = false;
+
+        btn.innerHTML = originalText;
+
+        alert("⚠️ Approval failed: " + (res.error || "Unknown error"));
+
+      }
+
+    })
+
+    .withFailureHandler(err => {
+
+      btn.disabled = false;
+
+      btn.innerHTML = originalText;
+
+      alert("❌ Error approving report: " + err.message);
+
+    })
+
+    .approveReportAndCompileMatrix(studentId, month, year);
+
+}
+
+
+
+    const BATCH_IDS = ['B001', 'B002', 'B003', 'B004'];
+
+
+
+    function escapeHtml(value) {
+
+      return String(value ?? '')
+
+        .replace(/&/g, '&amp;')
+
+        .replace(/</g, '&lt;')
+
+        .replace(/>/g, '&gt;')
+
+        .replace(/"/g, '&quot;')
+
+        .replace(/'/g, '&#039;');
+
+    }
+
+
+
+    function loadBatchConfiguration() {
+
+      const body = document.getElementById('batchConfigBody');
+
+      const message = document.getElementById('batchConfigMessage');
+
+      if (!body) return;
+
+
+
+      body.innerHTML = '<tr><td colspan="7" class="text-center py-4"><span class="spinner-border spinner-border-sm"></span> Loading...</td></tr>';
+
+      message.innerHTML = '';
+
+
+
+      google.script.run
+
+        .withSuccessHandler(function(batches) {
+
+          const byId = {};
+
+          (batches || []).forEach(b => byId[String(b.batchId || '').toUpperCase()] = b);
+
+
+
+          body.innerHTML = BATCH_IDS.map(id => {
+
+            const b = byId[id] || {};
+
+            return `
+
+              <tr data-batch-id="${id}">
+
+                <td><span class="badge bg-secondary fs-6">${id}</span></td>
+
+                <td><input class="form-control batch-name" value="${escapeHtml(b.batchName || '')}" placeholder="Batch name"></td>
+
+                <td><input type="date" class="form-control batch-start" value="${escapeHtml(b.startDate || '')}"></td>
+
+                <td><input type="date" class="form-control batch-end" value="${escapeHtml(b.endDate || '')}"></td>
+
+                <td><input type="number" min="0" step="1" class="form-control batch-leave" value="${b.semesterLeaveLimit ?? ''}"></td>
+
+                <td><input type="number" min="0" step="1" class="form-control batch-mc" value="${b.mcLimit ?? ''}"></td>
+
+                <td>
+
+                  <select class="form-select batch-status">
+
+                    <option value="Active" ${b.status === 'Active' ? 'selected' : ''}>Active</option>
+
+                    <option value="Inactive" ${b.status !== 'Active' ? 'selected' : ''}>Inactive</option>
+
+                  </select>
+
+                </td>
+
+              </tr>`;
+
+          }).join('');
+
+        })
+
+        .withFailureHandler(function(err) {
+
+          body.innerHTML = '<tr><td colspan="7" class="text-center text-danger py-4">Unable to load batch configuration.</td></tr>';
+
+          message.innerHTML = `<div class="alert alert-danger">${escapeHtml(err.message || err)}</div>`;
+
+        })
+
+        .getInternshipBatches();
+
+    }
+
+
+
+    function saveBatchConfiguration() {
+
+      const btn = document.getElementById('saveBatchConfigBtn');
+
+      const message = document.getElementById('batchConfigMessage');
+
+      const rows = Array.from(document.querySelectorAll('#batchConfigBody tr[data-batch-id]'));
+
+
+
+      if (rows.length !== 4) {
+
+        alert('Batch configuration is not fully loaded. Please reload first.');
+
+        return;
+
+      }
+
+
+
+      const batches = rows.map(row => ({
+
+        batchId: row.dataset.batchId,
+
+        batchName: row.querySelector('.batch-name').value.trim(),
+
+        startDate: row.querySelector('.batch-start').value,
+
+        endDate: row.querySelector('.batch-end').value,
+
+        semesterLeaveLimit: row.querySelector('.batch-leave').value,
+
+        mcLimit: row.querySelector('.batch-mc').value,
+
+        status: row.querySelector('.batch-status').value
+
+      }));
+
+
+
+      for (const b of batches) {
+
+        if (!b.batchName) { alert(`${b.batchId}: Batch Name is required.`); return; }
+
+        if (b.semesterLeaveLimit === '' || Number(b.semesterLeaveLimit) < 0) { alert(`${b.batchId}: Enter a valid Semester Leave Limit.`); return; }
+
+        if (b.mcLimit === '' || Number(b.mcLimit) < 0) { alert(`${b.batchId}: Enter a valid MC Limit.`); return; }
+
+        if (b.status === 'Active' && (!b.startDate || !b.endDate)) { alert(`${b.batchId}: Active batch requires Start Date and End Date.`); return; }
+
+        if (b.startDate && b.endDate && b.startDate > b.endDate) { alert(`${b.batchId}: Start Date cannot be after End Date.`); return; }
+
+      }
+
+
+
+      btn.disabled = true;
+
+      btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Saving...';
+
+      message.innerHTML = '';
+
+
+
+      google.script.run
+
+        .withSuccessHandler(function(result) {
+
+          btn.disabled = false;
+
+          btn.innerHTML = '💾 Save Batch Configuration';
+
+          message.innerHTML = `<div class="alert alert-success">✅ ${escapeHtml(result?.message || 'Batch configuration saved successfully.')}</div>`;
+
+          loadBatchConfiguration();
+
+        })
+
+        .withFailureHandler(function(err) {
+
+          btn.disabled = false;
+
+          btn.innerHTML = '💾 Save Batch Configuration';
+
+          message.innerHTML = `<div class="alert alert-danger">❌ ${escapeHtml(err.message || err)}</div>`;
+
+        })
+
+        .saveInternshipBatches(batches);
+
+    }
+
+
+
+    function loadAll() {
+
+      const reportDiv = document.getElementById('report');
+
+      reportDiv.innerHTML = '<div class="text-center p-5"><div class="spinner-border text-primary"></div><br>Loading All Students...</div>';
+
+
+
+      google.script.run
+
+        .withSuccessHandler(data => {
+
+          if (!data || !data.grouped || Object.keys(data.grouped).length === 0) {
+
+            reportDiv.innerHTML = '<div class="alert alert-warning text-center">No student records found.</div>';
+
+            updateStats({});
+
+            return;
+
+          }
+
+          rawData = data;
+
+          updateStats(data.grouped);
+
+          updateLateDashboardAlert(data.grouped);
+
+          populateDropdowns(data.grouped);
+
+          applyFilters();
+
+        })
+
+        .withFailureHandler(err => {
+
+          reportDiv.innerHTML = `<div class="alert alert-danger text-center">
+
+            <strong>Backend Error:</strong> ${err.message}<br>
+
+            <small>Please check column indexes in Code.gs or Google Sheet permissions.</small>
+
+          </div>`;
+
+        })
+
+        .getAdminAttendanceGrouped(
+
+          document.getElementById('reportMonthFilter').value,
+
+          document.getElementById('reportYearFilter').value,
+          isAllStudentsView()
+
+        );
+
+    }
+
+
+
+    function updateStats(groupedData) {
+
+      let total = 0, present = 0, completed = 0, absent = 0;
+
+      Object.values(groupedData).forEach(hosp => {
+
+        Object.values(hosp).forEach(s => {
+
+          total++;
+
+          if (s.status === 'ABSENT') absent++;
+
+          else if (s.status === 'PRESENT') present++;
+
+          else if (s.status === 'COMPLETED') completed++;
+
+        });
+
+      });
+
+      document.getElementById('statTotal').innerText = total;
+
+      document.getElementById('statPresent').innerText = present;
+
+      document.getElementById('statCompleted').innerText = completed;
+
+      document.getElementById('statAbsent').innerText = absent;
+
+    }
+
+
+
+    // Uses the SAME 8:00 AM cutoff already used in the Monthly Report.
+
+    // No separate late-time setting is introduced in the Admin Dashboard.
+
+    function isLateClockIn(clockIn) {
+
+      if (!clockIn) return false;
+
+
+
+      const d = new Date(clockIn);
+
+      if (isNaN(d.getTime())) return false;
+
+
+
+      const hour = d.getHours();
+
+      const minute = d.getMinutes();
+
+
+
+      return hour > 8 || (hour === 8 && minute > 0);
+
+    }
+
+
+
+    function updateLateDashboardAlert(groupedData) {
+
+      const alert = document.getElementById('lateDashboardAlert');
+
+      if (!alert) return;
+
+
+
+      let lateCount = 0;
+
+
+
+      Object.values(groupedData || {}).forEach(hospital => {
+
+        Object.values(hospital || {}).forEach(student => {
+
+          if (isLateClockIn(student.clockIn)) lateCount++;
+
+        });
+
+      });
+
+
+
+      if (lateCount > 0) {
+
+        alert.innerText = `🚨 ${lateCount} LATE ATTENDEE${lateCount === 1 ? '' : 'S'}`;
+
+        alert.style.display = 'inline-block';
+
+      } else {
+
+        alert.style.display = 'none';
+
+      }
+
+    }
+
+
+
+    function populateDropdowns(groupedData) {
+
+      const hospitals = Object.keys(groupedData).sort();
+
+      const hSelect = document.getElementById('hospitalFilter');
+
+      if (!hSelect) return;
+
+
+
+      const current = hSelect.value;
+
+      hSelect.innerHTML = '<option value="">All Hospitals / Facilities</option>' + 
+
+        hospitals.map(h => `<option value="${h}" ${h === current ? 'selected' : ''}>${h}</option>`).join('');
+
+    }
+
+
+
+    function applyFilters() {
+
+      if (!rawData.grouped) return;
+
+      const nameVal = (document.getElementById('nameFilter')?.value || '').toLowerCase();
+
+      const hospVal = document.getElementById('hospitalFilter')?.value || '';
+
+      const reportDiv = document.getElementById('report');
+
+      let html = "";
+
+      const hospitals = Object.keys(rawData.grouped).sort();
+
+
+
+      hospitals.forEach(hospName => {
+
+        if (hospVal !== "" && hospName !== hospVal) return;
+
+
+
+        const students = Object.values(rawData.grouped[hospName]).filter(s => 
+
+          s.name.toLowerCase().includes(nameVal) || s.studentID.toLowerCase().includes(nameVal)
+
+        );
+
+
+
+        if (students.length > 0) {
+
+          html += `
+
+            <div class="card overflow-hidden border mb-4 shadow-sm">
+
+                <div class="hospital-header d-flex justify-content-between align-items-center bg-primary text-white p-3">
+
+                    <span class="fw-bold">🏥 ${hospName}</span>
+
+                    <span class="badge bg-light text-primary">${students.length} Students</span>
+
+                </div>
+
+                <div class="table-responsive">
+
+                  <table class="table table-hover align-middle mb-0">
+
+                      <thead class="table-light">
+
+                          <tr>
+
+                              <th>Student Name / ID</th>
+
+                              <th>Today's Status</th>
+
+                              <th>Clock In</th>
+
+                              <th>Clock Out</th>
+
+                              <th>Location</th>
+
+                              <th>Monthly Submission</th>
+
+                              <th class="text-center">Action</th>
+
+                          </tr>
+
+                      </thead>
+
+                      <tbody>`;
+
+
+
+          students.forEach(s => {
+
+            const isLate = isLateClockIn(s.clockIn);
+
+            let badgeClass = s.status === 'PRESENT' ? 'bg-warning text-dark' : (s.status === 'COMPLETED' ? 'bg-success' : 'bg-danger');
+
+            let statusText = s.status === 'PRESENT' ? 'CLOCKED IN' : s.status;
+
+            const rowClass = isLate ? 'late-row' : '';
+
+            const lateAlertHtml = isLate ? '<div class="late-alert-text">🚨 LATE ARRIVAL (after 8:00 AM)</div>' : '';
+
+
+
+            let reportBadge = '<span class="badge bg-secondary">Not Submitted</span>';
+
+            if (s.reportStatus === 'PENDING_ADMIN') {
+
+              reportBadge = `<span class="badge bg-warning text-dark">⏳ Pending Admin (${s.reportMonth}/${s.reportYear})</span>`;
+
+            } else if (s.reportStatus === 'APPROVED') {
+
+              reportBadge = '<span class="badge bg-success">🎉 Approved & Matrix Updated</span>';
+
+            }
+
+
+
+            let scanLinkHtml = "";
+
+            if (s.scanUrl && s.scanUrl.startsWith("http")) {
+
+              scanLinkHtml = `<a href="${s.scanUrl}" target="_blank" class="btn btn-sm btn-outline-info me-1">📄 View Scanned Report</a>`;
+
+            }
+
+
+
+            let approveBtnHtml = "";
+
+            if (s.reportStatus === 'PENDING_ADMIN' || s.reportStatus === 'VERIFIED_BY_PRECEPTOR') {
+
+              approveBtnHtml = `<button class="btn btn-sm btn-success ms-1" onclick="approveFinalReport('${s.studentID}', ${s.reportMonth}, ${s.reportYear})">🎓 Approve & Log to Matrix</button>`;
+
+            }
+
+
+
+            html += `
+
+              <tr class="${rowClass}">
+
+                <td><b>${s.name}</b><br><small class="text-muted">${s.studentID}</small></td>
+
+                <td><span class="badge ${badgeClass}">${statusText}</span>${lateAlertHtml}</td>
+
+                <td>${s.clockIn ? formatDateOnly(s.clockIn) : '--:--'}</td>
+
+                <td>${s.clockOut ? formatDateOnly(s.clockOut) : '--:--'}</td>
+
+                <td>${formatLocationBadge(s.locIn?.label, s.locIn?.url)} ${formatLocationBadge(s.locOut?.label, s.locOut?.url)}</td>
+
+                <td>${reportBadge}</td>
+
+                <td class="text-center">
+
+                  <button class="btn btn-sm btn-outline-primary me-1" onclick="viewPersonalReport('${s.studentID}', ${s.reportMonth}, ${s.reportYear})">🔍 System Logs</button>
+
+                  ${scanLinkHtml}
+
+                  ${approveBtnHtml}
+
+                </td>
+
+              </tr>`;
+
+          });
+
+
+
+          html += `</tbody></table></div></div>`;
+
+        }
+
+      });
+
+
+
+      reportDiv.innerHTML = html || '<div class="alert alert-info text-center m-3">No matching student records found.</div>';
+
+    }
+
+
+
+    function approveFinalReport(studentId, month, year) {
+
+  if (!confirm(`Approve monthly attendance for Student ID ${studentId} (${month}/${year}) and automatically update the KEDATANGAN master summary matrix?`)) {
+
+    return;
+
+  }
+
+
+
+  // Find the button that was clicked to give instant feedback
+
+  const btn = event.currentTarget;
+
+  const originalText = btn.innerHTML;
+
+  btn.disabled = true;
+
+  btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Approving...';
+
+
+
+  google.script.run
+
+    .withSuccessHandler(res => {
+
+      if (res && res.success) {
+
+        const row = btn.closest('tr');
+
+        if (row) {
+
+          // 1. Update Monthly Submission Badge
+
+          const reportBadgeCell = row.cells[4];
+
+          if (reportBadgeCell) {
+
+            reportBadgeCell.innerHTML = '<span class="badge bg-success">🎉 Approved & Matrix Updated</span>';
+
+          }
+
+
+
+          // 2. Remove the approve button from the action cell while retaining other links
+
+          btn.remove();
+
+        }
+
+
+
+        // 3. Update local state quietly so filters still work without full reload
+
+        Object.values(rawData.grouped || {}).forEach(hosp => {
+
+          if (hosp[studentId]) {
+
+            hosp[studentId].reportStatus = 'APPROVED';
+
+          }
+
+        });
+
+
+
+        alert("✅ " + res.message);
+
+      } else {
+
+        btn.disabled = false;
+
+        btn.innerHTML = originalText;
+
+        alert("⚠️ Approval failed: " + (res.error || "Unknown error"));
+
+      }
+
+    })
+
+    .withFailureHandler(err => {
+
+      btn.disabled = false;
+
+      btn.innerHTML = originalText;
+
+      alert("❌ Error approving report: " + err.message);
+
+    })
+
+    .approveReportAndCompileMatrix(studentId, month, year);
+
+}
+
+
+
+    function viewPersonalReport(studentId, month, year) {
+
+      google.script.run.withSuccessHandler(url => {
+
+        window.open(`${url}?page=adminReport&id=${encodeURIComponent(studentId)}&month=${month}&year=${year}`, '_blank');
+
+      }).getScriptUrl();
+
+    }
+
+
+
+    function exportHospitalData() {
+
+      const hosp = document.getElementById('hospitalFilter').value;
+
+      const selectedYear = document.getElementById('yearFilter').value;
+
+
+
+      if (!hosp) {
+
+        alert("⚠️ Please select a Hospital first.");
+
+        return;
+
+      }
+
+
+
+      const btn = event.target;
+
+      const originalText = btn.innerHTML;
+
+      btn.disabled = true;
+
+      btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Processing...';
+
+
+
+      if (confirm(`Generate full ${selectedYear} spreadsheet backup for ${hosp}?`)) {
+
+        google.script.run
+
+          .withSuccessHandler(result => {
+
+            btn.disabled = false;
+
+            btn.innerHTML = originalText;
+
+            if (typeof result === 'string' && result.includes("Error")) {
+
+              alert(result);
+
+            } else {
+
+              if (confirm(`✅ Success!\n\nFile: ${result.name}\n\nOpen backup now?`)) {
+
+                window.open(result.url, '_blank');
+
+              }
+
+            }
+
+          })
+
+          .withFailureHandler(err => {
+
+            btn.disabled = false;
+
+            btn.innerHTML = originalText;
+
+            alert("System Error: " + err);
+
+          })
+
+          .generateHospitalYearlyBackup(hosp, selectedYear);
+
+      } else {
+
+        btn.disabled = false;
+
+        btn.innerHTML = originalText;
+
+      }
+
+    }
+
+
+
+    function formatDateOnly(dateStr) {
+
+      if (!dateStr) return '--:--';
+
+      const d = new Date(dateStr);
+
+      if (isNaN(d.getTime())) return dateStr;
+
+      let h = d.getHours();
+
+      const m = d.getMinutes().toString().padStart(2, '0');
+
+      const ampm = h >= 12 ? 'PM' : 'AM';
+
+      h = h % 12 || 12;
+
+      return `${h}:${m} ${ampm}`;
+
+    }
+
+
+
+    function goHome() {
+
+      google.script.run.withSuccessHandler(url => { window.top.location.href = url; }).getScriptUrl();
+
+    }
+
+
+
+    function loadFeedbackHistoryTable(items) {
+
+      const tbody = document.getElementById("feedbackHistoryBody");
+
+      if (!tbody) return;
+
+      tbody.innerHTML = "";
+
+
+
+      if (!items || items.length === 0) {
+
+        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:15px; color:#666;">No feedback logged in history yet.</td></tr>';
+
+        return;
+
+      }
+
+
+
+      items.forEach(function(item) {
+
+        const row = document.createElement("tr");
+
+        row.innerHTML = `
+
+          <td style="padding:10px; border: 1px solid #dee2e6;">${item.date || item.timestamp}</td>
+
+          <td style="padding:10px; border: 1px solid #dee2e6;"><b>${item.studentName}</b><br><small class="text-muted">ID: ${item.studentId}</small></td>
+
+          <td style="padding:10px; border: 1px solid #dee2e6;">${item.hospital}</td>
+
+          <td style="padding:10px; border: 1px solid #dee2e6;"><b>${item.preceptorEmail || item.email}</b><br><small class="text-muted">${item.position || item.role || ''}</small></td>
+
+          <td style="padding:10px; border: 1px solid #dee2e6;">${item.message}</td>
+
+        `;
+
+        tbody.appendChild(row);
+
+      });
+
+    }
+
+
+
+    function loadUnifiedFeedbackDashboard() {
+
+      var container = document.getElementById("unifiedFeedbackContainer");
+
+      if (!container) return;
+
+
+
+      container.innerHTML = '<div style="text-align:center; padding: 30px; color: #718096;">Syncing all student feedback records...</div>';
+
+
+
+      google.script.run
+
+        .withSuccessHandler(function(threads) {
+
+          container.innerHTML = "";
+
+
+
+          loadFeedbackHistoryTable(threads);
+
+
+
+          if (!threads || threads.length === 0) {
+
+            container.innerHTML = '<div style="text-align:center; padding: 40px; color:#2ecc71; font-weight:600;">🎉 Clean Inbox! No feedback has been logged yet.</div>';
+
+            document.getElementById("feedbackCountBadge").style.display = "none";
+
+            return;
+
+          }
+
+
+
+          let openCount = threads.filter(t => t.status && t.status.toString().toLowerCase() === 'open').length;
+
+          const badge = document.getElementById("feedbackCountBadge");
+
+          if (openCount > 0) {
+
+            badge.innerText = `${openCount} Action Required`;
+
+            badge.style.display = "inline-block";
+
+          } else {
+
+            badge.style.display = "none";
+
+          }
+
+
+
+          threads.forEach(function(thread) {
+
+            var card = document.createElement("div");
+
+            card.className = "feedback-card";
+
+            var statusBadgeClass = (thread.status && thread.status.toString().toLowerCase() === 'open') ? 'badge-open' : 'badge-replied';
+
+
+
+            card.innerHTML = `
+
+              <div class="feedback-card-header" onclick="toggleAccordionContent('${thread.feedbackId}')">
+
+                <div style="font-size: 11px; color:#718096; white-space:nowrap;">${thread.date}</div>
+
+                <div><strong>${thread.studentName}</strong> <span style="font-size:11px; color:#718096;">(${thread.studentId})</span></div>
+
+                <div style="font-size:12px; color:#4a5568; font-weight:500;">${thread.hospital}</div>
+
+                <div style="font-size:11px; color:#718096;">${thread.preceptorEmail}</div>
+
+                <div style="text-align: right;"><span class="badge ${statusBadgeClass}">${thread.status}</span></div>
+
+              </div>
+
+
+
+              <div id="content_${thread.feedbackId}" class="feedback-card-content">
+
+                <div class="thread-box">
+
+                  <div class="thread-bubble bubble-preceptor">
+
+                    <div class="bubble-meta">
+
+                      <span><strong>${thread.preceptorEmail}</strong> (${thread.position})</span>
+
+                      <span>Submitted: ${thread.date}</span>
+
+                    </div>
+
+                    <div class="bubble-text">${thread.message}</div>
+
+                  </div>
+
+                </div>
+
+
+
+                <div id="replies_container_${thread.feedbackId}">
+
+                  ${thread.replies ? thread.replies.map(function(reply) {
+
+                    return `
+
+                      <div class="thread-bubble bubble-admin">
+
+                        <div class="bubble-meta">
+
+                          <span><strong>Admin Response</strong></span>
+
+                          <span>Replied: ${reply.date}</span>
+
+                        </div>
+
+                        <div class="bubble-text">${reply.message}</div>
+
+                      </div>
+
+                    `;
+
+                  }).join('') : ''}
+
+                </div>
+
+
+
+                <div class="inline-reply-container">
+
+                  <textarea id="replyText_${thread.feedbackId}" rows="3" placeholder="Type a response..."></textarea>
+
+                  <div style="text-align: right;">
+
+                    <button class="btn-send-reply" onclick="submitAccordionReply('${thread.feedbackId}', '${thread.studentId}', '${thread.studentName}', '${thread.hospital}', '${thread.preceptorEmail}', '${thread.position}')">Send Message & Close Thread</button>
+
+                  </div>
+
+                </div>
+
+              </div>
+
+            `;
+
+            container.appendChild(card);
+
+          });
+
+        })
+
+        .withFailureHandler(function(err) {
+
+          container.innerHTML = '<div style="text-align:center; padding: 20px; color:#e74c3c;">Connection Error: ' + err.message + '</div>';
+
+        })
+
+        .getUnifiedFeedbackThreads();
+
+    }
+
+
+
+    function toggleAccordionContent(id) {
+
+      var content = document.getElementById("content_" + id);
+
+      if (!content) return;
+
+      content.style.display = (content.style.display === "block") ? "none" : "block";
+
+    }
+
+
+
+    function submitAccordionReply(feedbackId, studentId, studentName, hospital, userEmail, userRole) {
+
+      var replyText = document.getElementById("replyText_" + feedbackId).value;
+
+      if (!replyText.trim()) {
+
+        alert("Please write a response message before submitting.");
+
+        return;
+
+      }
+
+
+
+      const payload = {
+
+        feedbackId: feedbackId,
+
+        studentId: studentId,
+
+        studentName: studentName,
+
+        hospital: hospital,
+
+        email: userEmail,
+
+        role: userRole, 
+
+        message: replyText,
+
+        timestamp: new Date().toISOString(),
+
+        status: "Replied" 
+
+      };
+
+
+
+      google.script.run
+
+        .withSuccessHandler(response => {
+
+          if (response.success) {
+
+            alert("Reply submitted!");
+
+            loadUnifiedFeedbackDashboard();
+
+          } else {
+
+            alert("Error saving: " + response.error);
+
+          }
+
+        })
+
+        .logFeedbackAction(payload);
+
+    }
+
+
+
+    // Keep the attendance monitor live without requiring manual refresh.
+
+    // This refreshes the existing dashboard data every 30 seconds.
+
+    setInterval(() => {
+
+      loadAll();
+
+    }, 300000);
+
+
+
+    function formatLocationBadge(locLabel, url) {
+
+  if (!locLabel || locLabel === '-' || locLabel.trim() === '') return '<span class="text-muted small">—</span>';
+
+  let badgeClass = 'bg-secondary';
+
+  if (locLabel.includes('✅')) badgeClass = 'bg-success text-white';
+
+  else if (locLabel.includes('🚩')) badgeClass = 'bg-danger text-white fw-bold';
+
+  else if (locLabel.includes('📍')) badgeClass = 'bg-info text-dark';
+
+  const href = url ? `href="${url}" target="_blank"` : '';
+
+  return `<a ${href} class="badge ${badgeClass} text-decoration-none">${locLabel}</a>`;
+
+}
+
+  </script>
+
+</body>
+
+</html>
